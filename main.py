@@ -87,13 +87,14 @@ def toggle_stay_on_top():
     else:
         root.wm_attributes("-topmost", False)
 
-def on_format_entry_change(event):
-    global format_text
-    format_text = format_entry.get()
-
 def on_color_format_change():
     global color_format
     color_format = color_var.get()
+    update_coordinates_text()
+
+def on_format_entry_change(event):
+    global format_text
+    format_text = format_entry.get()
     update_coordinates_text()
 
 def set_default_format(event):
@@ -101,12 +102,17 @@ def set_default_format(event):
     if format_entry.get() == "":
         format_entry.insert(0, format_text)
 
+def apply_format():
+    global format_text
+    format_text = format_entry.get()
+    update_coordinates_text()
+
 root = tk.Tk()
 root.title("Mouse and RGB Tracker   @雪导")
 
 # 设置窗口大小
-window_width = 400
-window_height = 500
+window_width = 350
+window_height = 520
 screen_width = root.winfo_screenwidth()
 screen_height = root.winfo_screenheight()
 x_coordinate = int((screen_width - window_width) / 2)
@@ -146,6 +152,9 @@ format_label.grid(row=0, column=0)
 format_entry = tk.Entry(format_frame, width=30)
 format_entry.insert(tk.END, format_text)
 format_entry.grid(row=0, column=1)
+
+apply_button = tk.Button(format_frame, text="确认", command=apply_format)
+apply_button.grid(row=0, column=2)
 
 # 当输入框获得焦点时，显示默认格式
 format_entry.bind("<FocusIn>", set_default_format)
