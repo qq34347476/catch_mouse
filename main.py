@@ -65,13 +65,13 @@ def on_shift_enter():
 def update_magnifier():
     x, y = pyautogui.position()
     # 获取屏幕区域的截图，并将截图的大小调整为更大的值
-    screenshot = ImageGrab.grab(bbox=(x-100, y-100, x+100, y+100))
+    screenshot = ImageGrab.grab(bbox=(x-50, y-50, x+50, y+50))  # 将区域缩小到1/4
     # 缩放截图
-    magnified_screenshot = screenshot.resize((400, 400), Image.LANCZOS)
+    magnified_screenshot = screenshot.resize((200, 200), Image.LANCZOS)  # 缩小预览区域为原来的1/4
 
     # 在截图上绘制鼠标光标
     draw = ImageDraw.Draw(magnified_screenshot)
-    draw.rectangle([(195, 195), (205, 205)], outline="red")
+    draw.rectangle([(97, 97), (103, 103)], outline="red")  # 缩小预览区域后，光标位置也需要缩小1/4
 
     # 转换为Tkinter PhotoImage
     magnified_photo = ImageTk.PhotoImage(magnified_screenshot)
@@ -105,8 +105,8 @@ root = tk.Tk()
 root.title("Mouse and RGB Tracker   @雪导")
 
 # 设置窗口大小
-window_width = 500
-window_height = 400
+window_width = 400
+window_height = 500
 screen_width = root.winfo_screenwidth()
 screen_height = root.winfo_screenheight()
 x_coordinate = int((screen_width - window_width) / 2)
@@ -133,7 +133,7 @@ color_format_frame.pack()
 rgb_radio = tk.Radiobutton(color_format_frame, text="RGB", variable=color_var, value="rgb", command=on_color_format_change)
 rgb_radio.pack(side=tk.LEFT)
 
-hex_radio = tk.Radiobutton(color_format_frame, text="HEX", variable=color_var, value="hex", command=on_color_format_change)
+hex_radio = tk.Radiobutton(color_format_frame, text="十六进制", variable=color_var, value="hex", command=on_color_format_change)
 hex_radio.pack(side=tk.LEFT)
 
 # 添加输入框和确认按钮
@@ -158,6 +158,9 @@ instructions_label.pack()
 magnifier_label = tk.Label(root)
 magnifier_label.pack()
 
+# 绑定输入框内容改变事件
+format_entry.bind("<FocusOut>", on_format_entry_change)
+
 # 创建复选框和标签所在的Frame，并使用grid布局管理器
 checkbox_and_label_frame = tk.Frame(root)
 checkbox_and_label_frame.pack()
@@ -165,10 +168,6 @@ checkbox_and_label_frame.pack()
 stay_on_top_var = tk.IntVar()
 stay_on_top_checkbox = tk.Checkbutton(checkbox_and_label_frame, text="Stay on Top", variable=stay_on_top_var, command=toggle_stay_on_top)
 stay_on_top_checkbox.grid(row=0, column=0)
-
-# 添加文字说明标签
-shift_enter_label = tk.Label(checkbox_and_label_frame, text="按住Shift+Enter进行截图")
-shift_enter_label.grid(row=0, column=1)
 
 # 绑定按键事件
 keyboard.add_hotkey("shift+enter", on_shift_enter)
