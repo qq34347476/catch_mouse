@@ -121,7 +121,7 @@ coordinates_text.pack()
 format_frame = tk.Frame(root)  # 新建一个框架用于放置格式相关的控件
 format_frame.pack(pady=5)
 
-format_label = tk.Label(format_frame, text="输入格式（使用{x}、{y}、{rgb}作为占位符）：")
+format_label = tk.Label(format_frame, text="复制格式：")
 format_label.grid(row=0, column=0)
 
 format_entry = tk.Entry(format_frame, width=30)
@@ -133,6 +133,10 @@ format_entry.bind("<FocusIn>", set_default_format)
 
 apply_button = tk.Button(format_frame, text="确认", command=apply_format)
 apply_button.grid(row=0, column=2)
+
+# 添加说明标签
+instructions_label = tk.Label(root, text="说明：使用 Shift+Enter 进行抓捕")
+instructions_label.pack()
 
 # 放大镜
 magnifier_label = tk.Label(root)
