@@ -108,7 +108,7 @@ def apply_format():
     update_coordinates_text()
 
 root = tk.Tk()
-root.title("Mouse and RGB Tracker   @雪导")
+root.title("Mouse and RGB Tracker@雪导")
 
 # 设置窗口大小
 window_width = 350
