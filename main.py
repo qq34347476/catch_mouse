@@ -5,7 +5,7 @@ import keyboard
 from PIL import Image, ImageTk, ImageGrab, ImageDraw
 
 coordinates_list = []
-format_text = ""  # 用来保存输入框中的格式
+format_text = "{x}, {y}, {rgb}"  # 用来保存输入框中的格式
 
 def get_mouse_position_and_rgb():
     x, y = pyautogui.position()
@@ -26,14 +26,16 @@ def get_mouse_position_and_rgb():
     rgb_text.insert(tk.END, f"RGB: {rgb_color}\n")
     rgb_text.config(state=tk.DISABLED)
 
-    clipboard.copy(f"X: {x}, Y: {y}, RGB: {rgb_color}")
+    clipboard_text = format_text.format(x=x, y=y, rgb=rgb_color)
+    clipboard.copy(clipboard_text)
 
 def update_coordinates_text():
     coordinates_text.config(state=tk.NORMAL)
     coordinates_text.delete("1.0", tk.END)
     for coordinate in coordinates_list:
         x, y, rgb_color = coordinate
-        coordinates_text.insert(tk.END, f"X: {x}, Y: {y}, RGB: {rgb_color}\n")
+        formatted_text = format_text.format(x=x, y=y, rgb=rgb_color)
+        coordinates_text.insert(tk.END, formatted_text + "\n")
     coordinates_text.config(state=tk.DISABLED)
 
 def on_shift_enter():
@@ -73,11 +75,29 @@ def toggle_stay_on_top():
     else:
         root.wm_attributes("-topmost", False)
 
+def on_format_entry_change(event):
+    global format_text
+    format_text = format_entry.get()
+
+def apply_format():
+    global format_text
+    format_text = format_entry.get()
+    update_coordinates_text()
+
+def copy_formatted():
+    selected_text = coordinates_text.get(tk.SEL_FIRST, tk.SEL_LAST)
+    clipboard.copy(selected_text)
+
+def set_default_format(event):
+    global format_text
+    if format_entry.get() == "":
+        format_entry.insert(0, format_text)
+
 root = tk.Tk()
 root.title("Mouse and RGB Tracker   @雪导")
 
 # 设置窗口大小
-window_width = 400
+window_width = 500
 window_height = 400
 screen_width = root.winfo_screenwidth()
 screen_height = root.winfo_screenheight()
@@ -97,6 +117,29 @@ rgb_text.pack()
 coordinates_text = tk.Text(root, height=10, width=40, wrap=tk.NONE, state=tk.DISABLED)
 coordinates_text.pack()
 
+# 添加输入框和确认按钮
+format_frame = tk.Frame(root)  # 新建一个框架用于放置格式相关的控件
+format_frame.pack(pady=5)
+
+format_label = tk.Label(format_frame, text="输入格式（使用{x}、{y}、{rgb}作为占位符）：")
+format_label.grid(row=0, column=0)
+
+format_entry = tk.Entry(format_frame, width=30)
+format_entry.insert(tk.END, format_text)
+format_entry.grid(row=0, column=1)
+
+# 当输入框获得焦点时，显示默认格式
+format_entry.bind("<FocusIn>", set_default_format)
+
+apply_button = tk.Button(format_frame, text="确认", command=apply_format)
+apply_button.grid(row=0, column=2)
+
+# 放大镜
+magnifier_label = tk.Label(root)
+magnifier_label.pack()
+
+# 绑定输入框内容改变事件
+format_entry.bind("<FocusOut>", on_format_entry_change)
 
 # 创建复选框和标签所在的Frame，并使用grid布局管理器
 checkbox_and_label_frame = tk.Frame(root)
@@ -110,9 +153,9 @@ stay_on_top_checkbox.grid(row=0, column=0)
 shift_enter_label = tk.Label(checkbox_and_label_frame, text="按住Shift+Enter进行截图")
 shift_enter_label.grid(row=0, column=1)
 
-# 放大镜
-magnifier_label = tk.Label(root)
-magnifier_label.pack()
+# 添加复制格式化文本按钮
+copy_button = tk.Button(root, text="复制格式化文本", command=copy_formatted)
+copy_button.pack()
 
 # 绑定按键事件
 keyboard.add_hotkey("shift+enter", on_shift_enter)
