@@ -23,3 +23,6 @@ pip freeze > requirements.txt
 ```bash
 pyinstaller --onefile --noconsole main.py
 ```
+
+{x}, {y}, {rgb}
+X: 1304, Y: 558, RGB: (31, 31, 31)
