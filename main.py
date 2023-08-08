@@ -6,6 +6,7 @@ from PIL import Image, ImageTk, ImageGrab, ImageDraw
 
 coordinates_list = []
 format_text = "{x}, {y}, {rgb}"  # 用来保存输入框中的格式
+color_format = "rgb"  # 用来保存选择的颜色格式，默认为 "rgb"
 
 def get_mouse_position_and_rgb():
     x, y = pyautogui.position()
@@ -21,10 +22,17 @@ def get_mouse_position_and_rgb():
     y_text.insert(tk.END, f"Y: {y}\n")
     y_text.config(state=tk.DISABLED)
 
-    rgb_text.config(state=tk.NORMAL)
-    rgb_text.delete("1.0", tk.END)
-    rgb_text.insert(tk.END, f"RGB: {rgb_color}\n")
-    rgb_text.config(state=tk.DISABLED)
+    if color_format == "rgb":
+        rgb_text.config(state=tk.NORMAL)
+        rgb_text.delete("1.0", tk.END)
+        rgb_text.insert(tk.END, f"RGB: {rgb_color}\n")
+        rgb_text.config(state=tk.DISABLED)
+    elif color_format == "hex":
+        hex_color = "#{:02x}{:02x}{:02x}".format(*rgb_color)
+        rgb_text.config(state=tk.NORMAL)
+        rgb_text.delete("1.0", tk.END)
+        rgb_text.insert(tk.END, f"HEX: {hex_color}\n")
+        rgb_text.config(state=tk.DISABLED)
 
     clipboard_text = format_text.format(x=x, y=y, rgb=rgb_color)
     clipboard.copy(clipboard_text)
@@ -34,7 +42,11 @@ def update_coordinates_text():
     coordinates_text.delete("1.0", tk.END)
     for coordinate in coordinates_list:
         x, y, rgb_color = coordinate
-        formatted_text = format_text.format(x=x, y=y, rgb=rgb_color)
+        if color_format == "rgb":
+            formatted_text = format_text.format(x=x, y=y, rgb=rgb_color)
+        elif color_format == "hex":
+            hex_color = "#{:02x}{:02x}{:02x}".format(*rgb_color)
+            formatted_text = format_text.replace("{x}", str(x)).replace("{y}", str(y)).replace("{rgb}", hex_color)
         coordinates_text.insert(tk.END, formatted_text + "\n")
     coordinates_text.config(state=tk.DISABLED)
 
@@ -79,14 +91,10 @@ def on_format_entry_change(event):
     global format_text
     format_text = format_entry.get()
 
-def apply_format():
-    global format_text
-    format_text = format_entry.get()
+def on_color_format_change():
+    global color_format
+    color_format = color_var.get()
     update_coordinates_text()
-
-def copy_formatted():
-    selected_text = coordinates_text.get(tk.SEL_FIRST, tk.SEL_LAST)
-    clipboard.copy(selected_text)
 
 def set_default_format(event):
     global format_text
@@ -117,6 +125,17 @@ rgb_text.pack()
 coordinates_text = tk.Text(root, height=10, width=40, wrap=tk.NONE, state=tk.DISABLED)
 coordinates_text.pack()
 
+# 添加颜色格式单选选项框
+color_var = tk.StringVar(value="rgb")
+color_format_frame = tk.Frame(root)
+color_format_frame.pack()
+
+rgb_radio = tk.Radiobutton(color_format_frame, text="RGB", variable=color_var, value="rgb", command=on_color_format_change)
+rgb_radio.pack(side=tk.LEFT)
+
+hex_radio = tk.Radiobutton(color_format_frame, text="HEX", variable=color_var, value="hex", command=on_color_format_change)
+hex_radio.pack(side=tk.LEFT)
+
 # 添加输入框和确认按钮
 format_frame = tk.Frame(root)  # 新建一个框架用于放置格式相关的控件
 format_frame.pack(pady=5)
@@ -131,9 +150,6 @@ format_entry.grid(row=0, column=1)
 # 当输入框获得焦点时，显示默认格式
 format_entry.bind("<FocusIn>", set_default_format)
 
-apply_button = tk.Button(format_frame, text="确认", command=apply_format)
-apply_button.grid(row=0, column=2)
-
 # 添加说明标签
 instructions_label = tk.Label(root, text="说明：使用 Shift+Enter 进行抓捕")
 instructions_label.pack()
@@ -141,9 +157,6 @@ instructions_label.pack()
 # 放大镜
 magnifier_label = tk.Label(root)
 magnifier_label.pack()
-
-# 绑定输入框内容改变事件
-format_entry.bind("<FocusOut>", on_format_entry_change)
 
 # 创建复选框和标签所在的Frame，并使用grid布局管理器
 checkbox_and_label_frame = tk.Frame(root)
@@ -156,10 +169,6 @@ stay_on_top_checkbox.grid(row=0, column=0)
 # 添加文字说明标签
 shift_enter_label = tk.Label(checkbox_and_label_frame, text="按住Shift+Enter进行截图")
 shift_enter_label.grid(row=0, column=1)
-
-# 添加复制格式化文本按钮
-copy_button = tk.Button(root, text="复制格式化文本", command=copy_formatted)
-copy_button.pack()
 
 # 绑定按键事件
 keyboard.add_hotkey("shift+enter", on_shift_enter)
